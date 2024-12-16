@@ -1,8 +1,9 @@
 import { MovieDetail } from './movie-detail.entity';
 import { BaseTable } from '../../common/entity/base-table.entity';
 import { Exclude, Expose, Transform } from "class-transformer";
-import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import {Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
 import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entities/genre.entity';
 
 
 /// ManyToOne Director -> 감독은 여러개의 영화를 가질 수 있음
@@ -16,17 +17,25 @@ export class Movie extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique : true
+  })
   title: string;
 
-  @Column()
-  genre: string;
+  @ManyToMany(
+    ()=>Genre,
+    genre => genre.movies,
+  )
+  @JoinTable()
+  genres : Genre[]
+ 
 
   @OneToOne(
     ()=>MovieDetail,
     movieDetail => movieDetail.id,
     {
-      cascade : true
+      cascade : true,
+      nullable : false
     }
   )
   @JoinColumn()
@@ -34,7 +43,11 @@ export class Movie extends BaseTable {
 
   @ManyToOne(
     ()=>Director,
-    director => director.id
+    director => director.id,
+    {
+      cascade : true,
+      nullable : false
+    }
   )
   director : Director;
 }
